@@ -435,6 +435,15 @@ export default function App() {
             </div>
           </div>
         </div>
+
+        {/* Invitation Only Message */}
+        <div className="mt-8 text-center">
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-4 max-w-2xl mx-auto">
+            <p className="text-gray-800 font-medium">
+              This is by invitation only. If I do not know you, I thank you for your donation.
+            </p>
+          </div>
+        </div>
       </div>
       </div>
     </div>

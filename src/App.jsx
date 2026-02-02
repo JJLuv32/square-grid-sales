@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { DollarSign, ShoppingCart, Lock } from 'lucide-react';
+import { DollarSign, ShoppingCart, Lock, Unlock } from 'lucide-react';
 
 export default function App() {
   const GRID_SIZE = 10;
   const PRICE_PER_SQUARE = 10;
+  const ADMIN_PASSWORD = "batmaN"; // Admin password
   
   // Initialize 10x10 grid with empty squares
   const [grid, setGrid] = useState(
@@ -17,12 +18,35 @@ export default function App() {
   
   const [selectedSquares, setSelectedSquares] = useState([]);
   const [currentInitials, setCurrentInitials] = useState('');
+  const [adminMode, setAdminMode] = useState(false);
+  const [showAdminInput, setShowAdminInput] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
 
   const columnLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
   const rowLetters = ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
 
+  const handleAdminLogin = () => {
+    if (adminPassword === ADMIN_PASSWORD) {
+      setAdminMode(true);
+      setShowAdminInput(false);
+      setAdminPassword('');
+    } else {
+      alert('Incorrect password');
+      setAdminPassword('');
+    }
+  };
+
   const handleSquareClick = (row, col) => {
-    // Don't allow clicking locked squares
+    // Admin mode: unlock and clear any square
+    if (adminMode) {
+      const newGrid = grid.map(r => r.map(square => ({ ...square })));
+      newGrid[row][col].locked = false;
+      newGrid[row][col].initials = '';
+      setGrid(newGrid);
+      return;
+    }
+
+    // Don't allow clicking locked squares in normal mode
     if (grid[row][col].locked) return;
     
     // Check if square is already selected in current session
@@ -88,7 +112,9 @@ export default function App() {
     const square = grid[row][col];
     const isSelected = selectedSquares.some(sq => sq.row === row && sq.col === col);
     
-    if (square.locked) {
+    if (adminMode && square.locked) {
+      return 'bg-red-200 cursor-pointer border-2 border-red-400 hover:bg-red-300';
+    } else if (square.locked) {
       return 'bg-gray-300 cursor-not-allowed border-2 border-gray-400';
     } else if (isSelected) {
       return 'bg-blue-400 cursor-pointer border-2 border-blue-600 hover:bg-blue-500';
@@ -100,11 +126,30 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen p-8" style={{
+      backgroundImage: 'url(https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1920&q=80)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed'
+    }}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-900/40 to-indigo-900/40 backdrop-blur-sm p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Square Grid Sales</h1>
           <p className="text-gray-600">Select your squares • ${PRICE_PER_SQUARE} per square</p>
+          
+          {/* Admin Mode Indicator */}
+          {adminMode && (
+            <div className="mt-2 inline-block bg-red-500 text-white px-4 py-2 rounded-lg font-bold">
+              🔓 ADMIN MODE - Click any square to unlock it
+              <button 
+                onClick={() => setAdminMode(false)}
+                className="ml-3 bg-white text-red-500 px-3 py-1 rounded text-sm hover:bg-gray-100"
+              >
+                Exit Admin
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -152,9 +197,10 @@ export default function App() {
                         onClick={() => handleSquareClick(rowIndex, colIndex)}
                         className={`aspect-square flex items-center justify-center text-xs font-bold rounded transition-all ${getSquareStyle(rowIndex, colIndex)}`}
                       >
-                        {square.locked && !square.initials && <Lock size={12} className="text-gray-600" />}
+                        {square.locked && !square.initials && !adminMode && <Lock size={12} className="text-gray-600" />}
+                        {square.locked && adminMode && <Unlock size={12} className="text-red-600" />}
                         {square.initials && (
-                          <span className={square.locked ? 'text-gray-700' : 'text-gray-800'}>
+                          <span className={square.locked && !adminMode ? 'text-gray-700' : 'text-gray-800'}>
                             {square.initials}
                           </span>
                         )}
@@ -188,7 +234,59 @@ export default function App() {
                   <div className="w-4 h-4 bg-gray-300 border-2 border-gray-400 rounded"></div>
                   <span>Locked</span>
                 </div>
+                {adminMode && (
+                  <div className="flex items-center gap-1">
+                    <div className="w-4 h-4 bg-red-200 border-2 border-red-400 rounded"></div>
+                    <span>Click to Unlock</span>
+                  </div>
+                )}
               </div>
+
+              {/* Hidden Admin Button - Click 5 times in bottom left corner */}
+              {!adminMode && !showAdminInput && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowAdminInput(true)}
+                    className="text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    Admin
+                  </button>
+                </div>
+              )}
+
+              {/* Admin Login */}
+              {showAdminInput && !adminMode && (
+                <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Admin Password:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                      placeholder="Enter password"
+                      className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                    />
+                    <button
+                      onClick={handleAdminLogin}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600"
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowAdminInput(false);
+                        setAdminPassword('');
+                      }}
+                      className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -215,7 +313,7 @@ export default function App() {
                 </div>
               </div>
 
-              {selectedSquares.length > 0 && (
+              {!adminMode && selectedSquares.length > 0 && (
                 <div className="mb-6 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -251,8 +349,8 @@ export default function App() {
                 </div>
               )}
 
-              {/* Payment Buttons - show when squares are locked OR when any locked squares exist */}
-              {(grid.flat().some(sq => sq.locked)) && (
+              {/* Payment Buttons - show when squares are locked AND not in admin mode */}
+              {!adminMode && grid.flat().some(sq => sq.locked) && (
                 <div className="space-y-3 mb-4">
                   <div className="text-sm font-medium text-gray-700 mb-2">Complete Payment:</div>
                   <button
@@ -271,7 +369,7 @@ export default function App() {
                     Pay with Cash App
                   </button>
 
-                  {/* Payment instruction - ALWAYS VISIBLE when payment buttons show */}
+                  {/* Payment instruction */}
                   <div className="mt-4 p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
                     <p className="text-sm font-bold text-yellow-900 text-center">
                       THE REASON FOR PAYMENT IS FUN. DO NOT ENTER ANY OTHER REASON.
@@ -280,7 +378,7 @@ export default function App() {
                 </div>
               )}
 
-              {selectedSquares.length === 0 && !grid.flat().some(sq => sq.locked) && (
+              {!adminMode && selectedSquares.length === 0 && !grid.flat().some(sq => sq.locked) && (
                 <p className="mt-4 text-sm text-gray-500 text-center">
                   Click squares on the grid to select them
                 </p>
@@ -289,6 +387,7 @@ export default function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

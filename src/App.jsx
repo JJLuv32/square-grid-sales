@@ -228,6 +228,7 @@ export default function App() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Big Game Boxes</h1>
           <p className="text-gray-600">Select your squares • ${PRICE_PER_SQUARE} per square</p>
+          <p className="text-gray-500 text-sm mt-1">Best viewed horizontally</p>
           
           {/* Admin Mode Indicator */}
           {adminMode && (

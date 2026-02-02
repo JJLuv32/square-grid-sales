@@ -11,7 +11,8 @@ export default function App() {
     Array(GRID_SIZE).fill(null).map(() => 
       Array(GRID_SIZE).fill(null).map(() => ({ 
         initials: '', 
-        locked: false 
+        locked: false,
+        highlighted: false
       }))
     )
   );
@@ -58,7 +59,15 @@ export default function App() {
     }
   };
 
-  const handleSquareClick = (row, col) => {
+  const handleSquareClick = (row, col, event) => {
+    // Admin mode with Shift key: toggle yellow highlight
+    if (adminMode && event?.shiftKey) {
+      const newGrid = grid.map(r => r.map(square => ({ ...square })));
+      newGrid[row][col].highlighted = !newGrid[row][col].highlighted;
+      setGrid(newGrid);
+      return;
+    }
+
     // Admin mode: unlock and clear any square
     if (adminMode) {
       const newGrid = grid.map(r => r.map(square => ({ ...square })));
@@ -134,7 +143,9 @@ export default function App() {
     const square = grid[row][col];
     const isSelected = selectedSquares.some(sq => sq.row === row && sq.col === col);
     
-    if (adminMode && square.locked) {
+    if (square.highlighted) {
+      return 'bg-yellow-300 cursor-pointer border-2 border-yellow-500';
+    } else if (adminMode && square.locked) {
       return 'bg-red-200 cursor-pointer border-2 border-red-400 hover:bg-red-300';
     } else if (square.locked) {
       return 'bg-gray-300 cursor-not-allowed border-2 border-gray-400';
@@ -163,7 +174,7 @@ export default function App() {
           {/* Admin Mode Indicator */}
           {adminMode && (
             <div className="mt-2 inline-block bg-red-500 text-white px-4 py-2 rounded-lg font-bold">
-              🔓 ADMIN MODE - Click squares to unlock or letters to change them
+              🔓 ADMIN MODE - Click squares to unlock | Shift+Click to highlight yellow | Click letters to change
               <button 
                 onClick={() => setAdminMode(false)}
                 className="ml-3 bg-white text-red-500 px-3 py-1 rounded text-sm hover:bg-gray-100"
@@ -226,7 +237,7 @@ export default function App() {
                     row.map((square, colIndex) => (
                       <div
                         key={`${rowIndex}-${colIndex}`}
-                        onClick={() => handleSquareClick(rowIndex, colIndex)}
+                        onClick={(e) => handleSquareClick(rowIndex, colIndex, e)}
                         className={`aspect-square flex items-center justify-center text-xs font-bold rounded transition-all ${getSquareStyle(rowIndex, colIndex)}`}
                       >
                         {square.locked && !square.initials && !adminMode && <Lock size={12} className="text-gray-600" />}
@@ -267,10 +278,16 @@ export default function App() {
                   <span>Locked</span>
                 </div>
                 {adminMode && (
-                  <div className="flex items-center gap-1">
-                    <div className="w-4 h-4 bg-red-200 border-2 border-red-400 rounded"></div>
-                    <span>Click to Unlock</span>
-                  </div>
+                  <>
+                    <div className="flex items-center gap-1">
+                      <div className="w-4 h-4 bg-red-200 border-2 border-red-400 rounded"></div>
+                      <span>Click to Unlock</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-4 h-4 bg-yellow-300 border-2 border-yellow-500 rounded"></div>
+                      <span>Winner</span>
+                    </div>
+                  </>
                 )}
               </div>
 

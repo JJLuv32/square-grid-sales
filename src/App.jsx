@@ -132,10 +132,10 @@ export default function App() {
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed'
     }}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-900/40 to-indigo-900/40 backdrop-blur-sm p-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900/20 to-indigo-900/20 backdrop-blur-[2px] p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Square Grid Sales</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Big Game Boxes</h1>
           <p className="text-gray-600">Select your squares • ${PRICE_PER_SQUARE} per square</p>
           
           {/* Admin Mode Indicator */}

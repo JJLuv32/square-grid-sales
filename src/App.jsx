@@ -218,12 +218,12 @@ export default function App() {
 
               <div className="flex gap-2">
                 {/* Left side row letters K-T - clickable in admin mode */}
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 flex-shrink-0">
                   {rowLetters.map((letter, i) => (
                     <div 
                       key={i} 
                       onClick={() => handleRowLetterClick(i)}
-                      className={`w-6 aspect-square flex items-center justify-center text-lg font-bold text-purple-600 ${adminMode ? 'cursor-pointer hover:bg-purple-100 rounded' : ''}`}
+                      className={`w-6 flex-1 flex items-center justify-center text-lg font-bold text-purple-600 ${adminMode ? 'cursor-pointer hover:bg-purple-100 rounded' : ''}`}
                       title={adminMode ? 'Click to change' : ''}
                     >
                       {letter}

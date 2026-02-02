@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DollarSign, ShoppingCart, Lock, Unlock } from 'lucide-react';
+import { database } from './firebase';
+import { ref, onValue, set, update } from 'firebase/database';
 
 export default function App() {
   const GRID_SIZE = 10;
   const PRICE_PER_SQUARE = 10;
-  const ADMIN_PASSWORD = "batmaN"; // Admin password
+  const ADMIN_PASSWORD = "batmaN";
   
   // Initialize 10x10 grid with empty squares
   const [grid, setGrid] = useState(
@@ -26,6 +28,58 @@ export default function App() {
   const [columnLetters, setColumnLetters] = useState(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']);
   const [rowLetters, setRowLetters] = useState(['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T']);
 
+  // Firebase: Load grid data on mount
+  useEffect(() => {
+    const gridRef = ref(database, 'grid');
+    const columnRef = ref(database, 'columnLetters');
+    const rowRef = ref(database, 'rowLetters');
+
+    // Listen for grid changes
+    const unsubscribeGrid = onValue(gridRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setGrid(data);
+      }
+    });
+
+    // Listen for column letter changes
+    const unsubscribeColumns = onValue(columnRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setColumnLetters(data);
+      }
+    });
+
+    // Listen for row letter changes
+    const unsubscribeRows = onValue(rowRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setRowLetters(data);
+      }
+    });
+
+    return () => {
+      unsubscribeGrid();
+      unsubscribeColumns();
+      unsubscribeRows();
+    };
+  }, []);
+
+  // Firebase: Save grid to database
+  const saveGridToFirebase = (newGrid) => {
+    set(ref(database, 'grid'), newGrid);
+  };
+
+  // Firebase: Save column letters to database
+  const saveColumnLettersToFirebase = (letters) => {
+    set(ref(database, 'columnLetters'), letters);
+  };
+
+  // Firebase: Save row letters to database
+  const saveRowLettersToFirebase = (letters) => {
+    set(ref(database, 'rowLetters'), letters);
+  };
+
   const handleAdminLogin = () => {
     if (adminPassword === ADMIN_PASSWORD) {
       setAdminMode(true);
@@ -45,6 +99,7 @@ export default function App() {
       const newColumnLetters = [...columnLetters];
       newColumnLetters[index] = newValue.trim().toUpperCase();
       setColumnLetters(newColumnLetters);
+      saveColumnLettersToFirebase(newColumnLetters);
     }
   };
 
@@ -56,6 +111,7 @@ export default function App() {
       const newRowLetters = [...rowLetters];
       newRowLetters[index] = newValue.trim().toUpperCase();
       setRowLetters(newRowLetters);
+      saveRowLettersToFirebase(newRowLetters);
     }
   };
 
@@ -65,6 +121,7 @@ export default function App() {
       const newGrid = grid.map(r => r.map(square => ({ ...square })));
       newGrid[row][col].highlighted = !newGrid[row][col].highlighted;
       setGrid(newGrid);
+      saveGridToFirebase(newGrid);
       return;
     }
 
@@ -74,6 +131,7 @@ export default function App() {
       newGrid[row][col].locked = false;
       newGrid[row][col].initials = '';
       setGrid(newGrid);
+      saveGridToFirebase(newGrid);
       return;
     }
 
@@ -84,10 +142,8 @@ export default function App() {
     const isSelected = selectedSquares.some(sq => sq.row === row && sq.col === col);
     
     if (isSelected) {
-      // Deselect the square
       setSelectedSquares(selectedSquares.filter(sq => !(sq.row === row && sq.col === col)));
     } else {
-      // Select the square
       setSelectedSquares([...selectedSquares, { row, col }]);
     }
   };
@@ -108,6 +164,7 @@ export default function App() {
     
     setGrid(newGrid);
     setCurrentInitials('');
+    // Don't save to Firebase yet - only save when locked
   };
 
   const handleLockSquares = () => {
@@ -121,6 +178,7 @@ export default function App() {
     
     setGrid(newGrid);
     setSelectedSquares([]);
+    saveGridToFirebase(newGrid); // Save to Firebase when locked
   };
 
   const handleVenmoCheckout = () => {
@@ -291,7 +349,7 @@ export default function App() {
                 )}
               </div>
 
-              {/* Hidden Admin Button - Click in bottom left corner */}
+              {/* Hidden Admin Button */}
               {!adminMode && !showAdminInput && (
                 <div className="mt-4">
                   <button

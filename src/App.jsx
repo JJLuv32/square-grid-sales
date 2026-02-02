@@ -93,7 +93,7 @@ export default function App() {
   };
 
   const handleInitialsChange = (e) => {
-    const value = e.target.value.toUpperCase().slice(0, 3);
+    const value = e.target.value.toUpperCase().slice(0, 7);
     setCurrentInitials(value);
   };
 
@@ -243,7 +243,7 @@ export default function App() {
                         {square.locked && !square.initials && !adminMode && <Lock size={12} className="text-gray-600" />}
                         {square.locked && adminMode && <Unlock size={12} className="text-red-600" />}
                         {square.initials && (
-                          <span className={square.locked && !adminMode ? 'text-gray-700' : 'text-gray-800'}>
+                          <span className={`text-[0.6rem] ${square.locked && !adminMode ? 'text-gray-700' : 'text-gray-800'}`}>
                             {square.initials}
                           </span>
                         )}
@@ -366,22 +366,22 @@ export default function App() {
                 <div className="mb-6 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Your Initials (up to 3 letters)
+                      Name/Initials (up to 7 characters)
                     </label>
                     <input
                       type="text"
                       value={currentInitials}
                       onChange={handleInitialsChange}
-                      placeholder="ABC"
+                      placeholder="JOHN"
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-center font-bold text-lg uppercase"
-                      maxLength={3}
+                      maxLength={7}
                     />
                     <button
                       onClick={handleAddInitials}
                       disabled={!currentInitials}
                       className="w-full mt-2 bg-blue-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                     >
-                      Add Initials to Selected
+                      Add Name to Selected
                     </button>
                   </div>
 
@@ -437,10 +437,15 @@ export default function App() {
         </div>
 
         {/* Invitation Only Message */}
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center space-y-4">
           <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-4 max-w-2xl mx-auto">
             <p className="text-gray-800 font-medium">
               This is by invitation only. If I do not know you, I thank you for your donation.
+            </p>
+          </div>
+          <div className="bg-blue-100/80 backdrop-blur-sm rounded-lg shadow-lg p-4 max-w-2xl mx-auto">
+            <p className="text-blue-900 font-medium">
+              Refresh the page to clear non-locked cells.
             </p>
           </div>
         </div>

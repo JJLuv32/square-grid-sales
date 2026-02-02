@@ -22,8 +22,8 @@ export default function App() {
   const [showAdminInput, setShowAdminInput] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
 
-  const columnLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-  const rowLetters = ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
+  const [columnLetters, setColumnLetters] = useState(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']);
+  const [rowLetters, setRowLetters] = useState(['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T']);
 
   const handleAdminLogin = () => {
     if (adminPassword === ADMIN_PASSWORD) {
@@ -33,6 +33,28 @@ export default function App() {
     } else {
       alert('Incorrect password');
       setAdminPassword('');
+    }
+  };
+
+  const handleColumnLetterClick = (index) => {
+    if (!adminMode) return;
+    
+    const newValue = prompt(`Change column ${index + 1} (currently "${columnLetters[index]}") to:`, columnLetters[index]);
+    if (newValue !== null && newValue.trim() !== '') {
+      const newColumnLetters = [...columnLetters];
+      newColumnLetters[index] = newValue.trim().toUpperCase();
+      setColumnLetters(newColumnLetters);
+    }
+  };
+
+  const handleRowLetterClick = (index) => {
+    if (!adminMode) return;
+    
+    const newValue = prompt(`Change row ${index + 1} (currently "${rowLetters[index]}") to:`, rowLetters[index]);
+    if (newValue !== null && newValue.trim() !== '') {
+      const newRowLetters = [...rowLetters];
+      newRowLetters[index] = newValue.trim().toUpperCase();
+      setRowLetters(newRowLetters);
     }
   };
 
@@ -141,7 +163,7 @@ export default function App() {
           {/* Admin Mode Indicator */}
           {adminMode && (
             <div className="mt-2 inline-block bg-red-500 text-white px-4 py-2 rounded-lg font-bold">
-              🔓 ADMIN MODE - Click any square to unlock it
+              🔓 ADMIN MODE - Click squares to unlock or letters to change them
               <button 
                 onClick={() => setAdminMode(false)}
                 className="ml-3 bg-white text-red-500 px-3 py-1 rounded text-sm hover:bg-gray-100"
@@ -165,10 +187,15 @@ export default function App() {
                 {/* Empty space for alignment with row letters */}
                 <div className="w-6"></div>
 
-                {/* Column letters A-J above top row - properly aligned */}
+                {/* Column letters A-J above top row - clickable in admin mode */}
                 <div className="grid grid-cols-10 gap-1 mb-1 flex-1">
                   {columnLetters.map((letter, i) => (
-                    <div key={i} className="text-center text-lg font-bold text-orange-600">
+                    <div 
+                      key={i} 
+                      onClick={() => handleColumnLetterClick(i)}
+                      className={`text-center text-lg font-bold text-orange-600 ${adminMode ? 'cursor-pointer hover:bg-orange-100 rounded px-1' : ''}`}
+                      title={adminMode ? 'Click to change' : ''}
+                    >
                       {letter}
                     </div>
                   ))}
@@ -179,10 +206,15 @@ export default function App() {
               </div>
 
               <div className="flex gap-2">
-                {/* Left side row letters K-T */}
+                {/* Left side row letters K-T - clickable in admin mode */}
                 <div className="flex flex-col gap-1">
                   {rowLetters.map((letter, i) => (
-                    <div key={i} className="w-6 aspect-square flex items-center justify-center text-lg font-bold text-purple-600">
+                    <div 
+                      key={i} 
+                      onClick={() => handleRowLetterClick(i)}
+                      className={`w-6 aspect-square flex items-center justify-center text-lg font-bold text-purple-600 ${adminMode ? 'cursor-pointer hover:bg-purple-100 rounded' : ''}`}
+                      title={adminMode ? 'Click to change' : ''}
+                    >
                       {letter}
                     </div>
                   ))}
@@ -242,7 +274,7 @@ export default function App() {
                 )}
               </div>
 
-              {/* Hidden Admin Button - Click 5 times in bottom left corner */}
+              {/* Hidden Admin Button - Click in bottom left corner */}
               {!adminMode && !showAdminInput && (
                 <div className="mt-4">
                   <button
@@ -387,7 +419,7 @@ export default function App() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
     </div>
   );
 }
